@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -18,10 +20,16 @@ class AlphaPlayerController {
   final String _path;
   final _AlphaPlayerControllerType _alphaPlayerControllerType;
 
+  Uint8List? _media;
+  Map<String, String>? _networkHeaders;
   bool _playing = false;
 
   /// Returns [bool] of controller playing state.
   bool get isPlaying => _playing;
+
+  /// Returns [Uint8List] of [initialize] media.
+  /// Returns null if controller is not initialized.
+  Uint8List? get media => _media;
 
   static Future<String?> get platformVersion async {
     final String? version = await _channel.invokeMethod('getPlatformVersion');
@@ -36,22 +44,34 @@ class AlphaPlayerController {
     _alphaPlayerControllerType = _AlphaPlayerControllerType.assets;
 
   /// Fabric for [AlphaPlayerController] where media get from network by [url].
+  /// Use HTTP GET request with [headers].
   ///
   /// Throws an [IOException] when [url] request is not 2xx.
-  AlphaPlayerController.network(String url) :
+  AlphaPlayerController.network(String url, Map<String, String>? headers) :
     _path = url,
-    _alphaPlayerControllerType = _AlphaPlayerControllerType.network;
+    _alphaPlayerControllerType = _AlphaPlayerControllerType.network,
+    _networkHeaders = headers;
 
   /// Set [AlphaPlayerController] to play state.
   void play() => _playing = true;
 
   /// Initialize controller data to visualization on view.
+  ///
   /// You may call [play] when [initialize] ends for start video.
   /// Use [State.setState] in [State] if you end your controller settings or you start playing video.
   ///
+  /// This method of receiving media waits for complete data acquisition before playing.
+  ///
   /// Throws an [IOException] when media source is not defined.
   Future<void> initialize() async {
-    throw UnimplementedError(); // TODO: Create implementation
+    switch(_alphaPlayerControllerType) {
+      case _AlphaPlayerControllerType.assets:
+        _media = (await rootBundle.load(_path)).buffer.asUint8List();
+        break;
+      case _AlphaPlayerControllerType.network:
+        _media = (await http.get(Uri.parse(_path), headers: _networkHeaders)).bodyBytes;
+        break;
+    }
   }
 }
 
@@ -69,18 +89,23 @@ class AlphaPlayerView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const String viewType = 'alpha-player-view';
+    final Map<String, dynamic> creationParams = <String, dynamic>{
+      "media": controller.media,
+    };
 
     if(Platform.isAndroid) {
-      return const AndroidView(
+      return AndroidView(
         viewType: viewType,
         layoutDirection: TextDirection.ltr,
-        creationParamsCodec: StandardMessageCodec(),
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
       );
     } else if(Platform.isIOS) {
-      return const UiKitView(
+      return UiKitView(
         viewType: viewType,
         layoutDirection: TextDirection.ltr,
-        creationParamsCodec: StandardMessageCodec(),
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
       );
     } else {
       throw PlatformException(code: "Your platform is not supports.", message: "Platform ${Platform.operatingSystem} is not supports in alpha_player.");
