@@ -8,4 +8,12 @@ void main() {
   test('getPlatformVersion', () async {
     expect(await AlphaPlayerController.platformVersion, '42');
   });
+
+  test('isPlaying', () async {
+    final alphaPlayerController = AlphaPlayerController.network('https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley');
+
+    expect(alphaPlayerController.isPlaying, false);
+    alphaPlayerController.play();
+    expect(alphaPlayerController.isPlaying, true);
+  });
 }
