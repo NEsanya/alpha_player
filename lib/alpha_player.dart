@@ -20,21 +20,22 @@ class AlphaPlayerController {
   final String _path;
   final _AlphaPlayerControllerType _alphaPlayerControllerType;
 
+  // Player data.
   Uint8List? _media;
-  Map<String, String>? _networkHeaders;
   bool _playing = false;
+
+  // Controller meta data.
+  Map<String, String>? _networkHeaders;
+  State<StatefulWidget>? _stateListener;
 
   /// Returns [bool] of controller playing state.
   bool get isPlaying => _playing;
 
-  /// Returns [Uint8List] of [initialize] media.
+  /// Returns [Uint8List] of [initialize]/[lazyInitialize] media.
   /// Returns null if controller is not initialized.
   Uint8List? get media => _media;
 
-  static Future<String?> get platformVersion async {
-    final String? version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
+  static Future<String?> get platformVersion async => await _channel.invokeMethod('getPlatformVersion');
 
   /// Fabric for [AlphaPlayerController] where media gets from project [assets].
   ///
@@ -53,12 +54,25 @@ class AlphaPlayerController {
     _networkHeaders = headers;
 
   /// Set [AlphaPlayerController] to play state.
-  void play() => _playing = true;
+  ///
+  /// Use [State.setState] in [State], or use [autoStateUpdate].
+  void play() {
+    _playing = true;
+    _stateListener?.setState(() {});
+  }
 
-  /// Initialize controller data to visualization on view.
+  /// Set [AlphaPlayerController] to stop playing state.
+  ///
+  /// Use [State.setState] in [State], or use [autoStateUpdate].
+  void stop() {
+    _playing = false;
+    _stateListener?.setState(() {});
+  }
+
+  /// Initialize controller data to visualization on [AlphaPlayerView].
   ///
   /// You may call [play] when [initialize] ends for start video.
-  /// Use [State.setState] in [State] if you end your controller settings or you start playing video.
+  /// Use [State.setState] in [State] if you end your controller settings or you start playing video, or use [autoStateUpdate].
   ///
   /// This method of receiving media waits for complete data acquisition before playing.
   ///
@@ -72,7 +86,20 @@ class AlphaPlayerController {
         _media = (await http.get(Uri.parse(_path), headers: _networkHeaders)).bodyBytes;
         break;
     }
+
+    _stateListener?.setState(() {});
   }
+
+  /// Initiialize controller data to visualization on [AlphaPlayerView].
+  Future<void> lazyInitialize() async {
+    throw UnimplementedError();
+  }
+
+  /// Auto update state on controller events.
+  void autoStateUpdate(State<StatefulWidget> state) => _stateListener = state;
+
+  /// Stop auto state update on controller events.
+  void stopAutoStateUpdate() => _stateListener = null;
 }
 
 class AlphaPlayerView extends StatelessWidget {
