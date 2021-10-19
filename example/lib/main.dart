@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
 
     _controller = AlphaPlayerController.network("http://clips.vorwaerts-gmbh.de/VfE_html5.mp4", null)
-      ..initialize().then((_) => setState(() {}));
+      ..initialize().then((_) => setState(() { _controller!.play(); }));
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.

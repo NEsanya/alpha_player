@@ -14,8 +14,8 @@ internal class PlayerView(context: Context, id: Int, creationParams: Map<String?
 
     private val media: ByteArray? = creationParams?.get("media") as ByteArray?
     private val isPlaying: Boolean = creationParams?.get("playing") as Boolean
-    private val width: Int? = creationParams?.get("width") as Int?
-    private val height: Int? = creationParams?.get("height") as Int?
+    // private val width: Int? = creationParams?.get("width") as Int?
+    // private val height: Int? = creationParams?.get("height") as Int?
 
     override fun getView(): View = playerView
 
@@ -27,8 +27,8 @@ internal class PlayerView(context: Context, id: Int, creationParams: Map<String?
             alphaMovieView.setVideoFromUri(context, uri)
         }
 
-        playerView.layoutParams.width = width ?: playerView.layoutParams.width
-        playerView.layoutParams.height = height ?: playerView.layoutParams.height
+        // playerView.layoutParams.width = width ?: playerView.layoutParams.width
+        // playerView.layoutParams.height = height ?: playerView.layoutParams.height
 
         if(isPlaying) alphaMovieView.start() else alphaMovieView.stop()
     }

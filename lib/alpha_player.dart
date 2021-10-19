@@ -31,7 +31,7 @@ class AlphaPlayerController {
   /// Returns [bool] of controller playing state.
   bool get isPlaying => _playing;
 
-  /// Returns [Uint8List] of [initialize]/[lazyInitialize] media.
+  /// Returns [Uint8List] of [initialize] media.
   /// Returns null if controller is not initialized.
   Uint8List? get media => _media;
 
@@ -99,8 +99,8 @@ class AlphaPlayerController {
 
 class AlphaPlayerView extends StatelessWidget {
   @protected final AlphaPlayerController controller;
-  @protected final double? width;
-  @protected final double? height;
+  @protected final int? width;
+  @protected final int? height;
 
   /// This class implement native platform video player from [controller].
   ///
