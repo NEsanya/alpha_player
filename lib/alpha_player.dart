@@ -90,11 +90,6 @@ class AlphaPlayerController {
     _stateListener?.setState(() {});
   }
 
-  /// Initiialize controller data to visualization on [AlphaPlayerView].
-  Future<void> lazyInitialize() async {
-    throw UnimplementedError();
-  }
-
   /// Auto update state on controller events.
   void autoStateUpdate(State<StatefulWidget> state) => _stateListener = state;
 
@@ -104,6 +99,8 @@ class AlphaPlayerController {
 
 class AlphaPlayerView extends StatelessWidget {
   @protected final AlphaPlayerController controller;
+  @protected final double? width;
+  @protected final double? height;
 
   /// This class implement native platform video player from [controller].
   ///
@@ -111,13 +108,21 @@ class AlphaPlayerView extends StatelessWidget {
   /// In ios returns [UiKitView] to create hybrid composition.
   ///
   /// Throws an [PlatformException] on build stage, when platform is not avaible.
-  const AlphaPlayerView({ Key? key, required this.controller }) : super(key: key);
+  const AlphaPlayerView({
+    required this.controller,
+    this.width,
+    this.height,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     const String viewType = 'alpha-player-view';
     final Map<String, dynamic> creationParams = <String, dynamic>{
       "media": controller.media,
+      "playing": controller.isPlaying,
+      "width": width,
+      "height": height
     };
 
     if(Platform.isAndroid) {
